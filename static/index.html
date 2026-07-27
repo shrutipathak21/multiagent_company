@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Software Company — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #12151c; --panel: #191d27; --panel-2: #1f2432; --line: #2a3040;
+    --ink: #e7e9ee; --dim: #8b93a6;
+    --accent: #5fd0a0; --accent-dim: #2f4a3f;
+    --amber: #e0a952; --red: #d9686c; --blue: #6ea3e0;
+    --c-product_manager: #c48ce0; --c-tech_lead: #6ea3e0; --c-backend: #5fd0a0;
+    --c-frontend: #e0c25f; --c-qa: #e0a952; --c-devops: #7ec9e0; --c-security: #d9686c;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:'Space Grotesk', sans-serif; min-height:100vh;}
+  .wrap{max-width:1180px; margin:0 auto; padding:36px 24px 80px;}
+
+  header{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:12px;}
+  .brand{display:flex; align-items:baseline; gap:12px;}
+  .brand .mark{font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--accent); border:1px solid var(--accent-dim); padding:3px 8px; border-radius:4px; letter-spacing:.06em;}
+  h1{font-size:22px; font-weight:600; margin:0; letter-spacing:-.01em;}
+  .sub{color:var(--dim); font-size:13px; margin-top:2px;}
+
+  .tabs{display:flex; gap:8px; margin-bottom:20px;}
+  .tab{
+    padding:8px 16px; border-radius:100px; border:1px solid var(--line); background:var(--panel);
+    color:var(--dim); font-size:13px; cursor:pointer; font-family:inherit;
+  }
+  .tab.active{background:var(--accent); color:#0d1310; border-color:var(--accent); font-weight:600;}
+
+  .layout{display:grid; grid-template-columns:340px 1fr; gap:20px;}
+  @media (max-width:880px){ .layout{grid-template-columns:1fr;} }
+
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:20px;}
+  .panel h2{font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--dim); margin:0 0 14px; font-weight:600;}
+
+  label{display:block; font-size:12px; color:var(--dim); margin:14px 0 6px;}
+  label:first-child{margin-top:0;}
+  textarea, select, input[type=text], input[type=number]{
+    width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--ink);
+    border-radius:6px; padding:10px 11px; font-family:inherit; font-size:13.5px; resize:vertical;
+  }
+  textarea{min-height:80px; line-height:1.4;}
+  textarea:focus, select:focus, input:focus{outline:none; border-color:var(--accent);}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+
+  .dropzone{
+    border:1.5px dashed var(--line); border-radius:8px; padding:16px; text-align:center;
+    font-size:12.5px; color:var(--dim); cursor:pointer; transition:border-color .15s;
+  }
+  .dropzone.drag{border-color:var(--accent); color:var(--accent);}
+  .dropzone strong{color:var(--ink);}
+  input[type=file]{display:none;}
+
+  button{
+    margin-top:18px; width:100%; padding:11px; border-radius:6px; border:none;
+    background:var(--accent); color:#0d1310; font-weight:600; font-size:14px; cursor:pointer; font-family:inherit;
+  }
+  button:hover{filter:brightness(1.08);}
+  button:disabled{background:var(--line); color:var(--dim); cursor:not-allowed;}
+
+  .hint{font-size:11.5px; color:var(--dim); margin-top:10px; line-height:1.5;}
+  .hint code{background:var(--panel-2); padding:1px 5px; border-radius:3px; font-family:'JetBrains Mono',monospace;}
+  .err{color:var(--red); font-size:12.5px; margin-top:10px; display:none; white-space:pre-wrap;}
+
+  .stage-label{font-size:11px; color:var(--dim); text-transform:uppercase; letter-spacing:.07em; margin:18px 0 8px;}
+  .stage-label:first-child{margin-top:0;}
+  .cards{display:flex; flex-wrap:wrap; gap:10px;}
+  .card{width:186px; background:var(--panel-2); border:1px solid var(--line); border-radius:8px; padding:12px; position:relative; overflow:hidden;}
+  .card::before{content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--role-color, var(--dim));}
+  .role{font-family:'JetBrains Mono', monospace; font-size:10.5px; color:var(--role-color, var(--dim)); text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px; font-weight:500;}
+  .card .title{font-size:13px; font-weight:500; line-height:1.35; margin-bottom:10px; min-height:34px;}
+  .status{display:inline-flex; align-items:center; gap:5px; font-size:11px; font-family:'JetBrains Mono',monospace; padding:3px 7px; border-radius:100px; border:1px solid var(--line);}
+  .dot{width:6px; height:6px; border-radius:50%; background:var(--dim);}
+  .status.pending .dot{background:var(--dim);}
+  .status.running{border-color:var(--blue); color:var(--blue);}
+  .status.running .dot{background:var(--blue); animation:pulse 1s infinite;}
+  .status.done{border-color:var(--accent-dim); color:var(--accent);}
+  .status.done .dot{background:var(--accent);}
+  .status.failed .dot, .status.blocked .dot{background:var(--red);}
+  .status.failed, .status.blocked{border-color:#4a2a2c; color:var(--red);}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .card.expandable{cursor:pointer;}
+  .result{display:none; margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--dim); white-space:pre-wrap; max-height:160px; overflow-y:auto; line-height:1.5;}
+  .card.open .result{display:block;}
+  .empty{color:var(--dim); font-size:13px; padding:40px 0; text-align:center;}
+
+  .round-banner{display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--dim); font-family:'JetBrains Mono', monospace; margin-bottom:14px;}
+  .round-banner .pill{border:1px solid var(--line); border-radius:100px; padding:3px 10px; color:var(--ink);}
+
+  .verdict{display:none; margin-bottom:16px; padding:14px 16px; border-radius:8px; border:1px solid var(--line);}
+  .verdict.show{display:block;}
+  .verdict.pass{border-color:var(--accent-dim); background:rgba(95,208,160,.06);}
+  .verdict.fail{border-color:#4a2a2c; background:rgba(217,104,108,.06);}
+  .verdict .headline{font-weight:600; font-size:14px; margin-bottom:4px;}
+  .verdict.pass .headline{color:var(--accent);}
+  .verdict.fail .headline{color:var(--red);}
+  .verdict .sub2{font-size:12px; color:var(--dim);}
+  .verdict a.dl{color:var(--accent); text-decoration:none; font-size:12.5px; font-weight:600;}
+
+  .diff-panel{margin-top:16px;}
+  .filetabs{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;}
+  .filetab{font-family:'JetBrains Mono',monospace; font-size:11px; padding:4px 9px; border:1px solid var(--line); border-radius:5px; color:var(--dim); cursor:pointer;}
+  .filetab.active{color:var(--accent); border-color:var(--accent-dim);}
+  .diffbox{background:#0d1017; border:1px solid var(--line); border-radius:8px; padding:12px 14px; font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.6; max-height:280px; overflow-y:auto;}
+  .diffbox .add{color:var(--accent); background:rgba(95,208,160,.08); display:block;}
+  .diffbox .del{color:var(--red); background:rgba(217,104,108,.08); display:block; text-decoration:line-through; opacity:.75;}
+  .diffbox .ctx{color:#5c6478; display:block;}
+
+  .log-panel{margin-top:20px;}
+  .log{background:#0d1017; border:1px solid var(--line); border-radius:8px; padding:14px 16px; font-family:'JetBrains Mono', monospace; font-size:12px; line-height:1.7; color:#9aa4b8; max-height:200px; overflow-y:auto;}
+  .log div span.tag{color:var(--accent); margin-right:8px;}
+
+  .badge-mode{font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--dim); border:1px solid var(--line); padding:3px 9px; border-radius:100px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <span class="mark">AI&nbsp;CO</span>
+      <div><h1>AI Software Company</h1><div class="sub">seven agents, one task graph, real code</div></div>
+    </div>
+    <span class="badge-mode" id="run-badge">idle</span>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="issue" onclick="switchTab('issue')">Issue only</div>
+    <div class="tab" data-tab="repo" onclick="switchTab('repo')">Repo mode (real code)</div>
+  </div>
+
+  <div class="layout">
+
+    <div class="panel" id="panel-issue">
+      <h2>New issue</h2>
+      <label for="issue">Describe the issue</label>
+      <textarea id="issue" placeholder="e.g. Add a /login endpoint with email+password auth, plus a login form.">Add a /login endpoint with email+password auth, and a login form page.</textarea>
+
+      <div class="row2">
+        <div><label for="provider">LLM provider</label>
+          <select id="provider">
+            <option value="mock">Mock (offline demo)</option>
+            <option value="groq">Groq (free API)</option>
+            <option value="gemini">Gemini (free API)</option>
+            <option value="ollama">Ollama (local)</option>
+          </select>
+        </div>
+        <div><label for="mode">Planning</label>
+          <select id="mode">
+            <option value="standard">Standard pipeline</option>
+            <option value="dynamic">Dynamic (LLM-planned)</option>
+          </select>
+        </div>
+      </div>
+      <label for="model" id="model-label" style="display:none;">Model name</label>
+      <input type="text" id="model" style="display:none;" placeholder="llama-3.3-70b-versatile">
+
+      <button id="run-btn" onclick="startRun()">Run the company</button>
+      <div class="err" id="err"></div>
+      <div class="hint" id="provider-hint">Mock mode needs nothing — it runs fully offline with placeholder output, useful for testing the pipeline itself.</div>
+    </div>
+
+    <div class="panel" id="panel-repo" style="display:none;">
+      <h2>Solve a real repo</h2>
+
+      <label>Upload your repo (.zip)</label>
+      <div class="dropzone" id="dropzone" onclick="document.getElementById('repo_zip').click()">
+        <div id="dz-text"><strong>Click to choose</strong> or drop a .zip here</div>
+      </div>
+      <input type="file" id="repo_zip" accept=".zip">
+
+      <label for="issue-repo">Describe the issue</label>
+      <textarea id="issue-repo" placeholder="e.g. Fix divide() to raise ValueError on zero, implement power().">Implement divide() (raise ValueError on b==0) and power() so the tests pass.</textarea>
+
+      <label for="test_cmd">Test command (run inside the repo root)</label>
+      <input type="text" id="test_cmd" value="python3 -m pytest -q">
+
+      <div class="row2">
+        <div><label for="provider-repo">LLM provider</label>
+          <select id="provider-repo">
+            <option value="mock">Mock (offline demo)</option>
+            <option value="groq">Groq (free API)</option>
+            <option value="gemini">Gemini (free API)</option>
+            <option value="custom">Custom (any OpenAI-compatible API)</option>
+            <option value="ollama">Ollama (local)</option>
+          </select>
+        </div>
+        <div><label for="max_rounds">Max fix rounds</label>
+          <input type="number" id="max_rounds" value="2" min="0" max="5">
+        </div>
+      </div>
+      <label for="model-repo" id="model-repo-label" style="display:none;">Model name</label>
+      <input type="text" id="model-repo" style="display:none;" placeholder="llama-3.3-70b-versatile">
+      <label for="base-url-repo" id="base-url-repo-label" style="display:none;">API base URL</label>
+      <input type="text" id="base-url-repo" style="display:none;" placeholder="https://api.together.xyz/v1">
+
+      <button id="run-btn-repo" onclick="startRepoRun()">Run against this repo</button>
+      <div class="err" id="err-repo"></div>
+      <div class="hint" id="provider-hint-repo">Mock mode writes placeholder text, not real code — use it only to check the pipeline mechanics. Pick Groq or Ollama for actual fixes.</div>
+    </div>
+
+    <div class="panel">
+      <h2>Task graph</h2>
+      <div class="round-banner" id="round-banner" style="display:none;">
+        <span class="pill" id="round-pill">round 1</span>
+        <span id="round-sub"></span>
+      </div>
+      <div class="verdict" id="verdict">
+        <div class="headline" id="verdict-headline"></div>
+        <div class="sub2" id="verdict-sub"></div>
+        <a class="dl" id="dl-link" href="#" style="display:none;">Download resulting repo (.zip) →</a>
+      </div>
+
+      <div class="board" id="board"><div class="empty">Run an issue to see the pipeline light up.</div></div>
+
+      <div class="diff-panel" id="diff-panel" style="display:none;">
+        <h2>Files changed</h2>
+        <div class="filetabs" id="filetabs"></div>
+        <div class="diffbox" id="diffbox"></div>
+      </div>
+
+      <div class="log-panel">
+        <h2>Scheduler log</h2>
+        <div class="log" id="log"><div style="color:#4a5266;">— waiting —</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const ROLE_LABEL = { product_manager:"Product Manager", tech_lead:"Tech Lead", backend:"Backend", frontend:"Frontend", qa:"QA", devops:"DevOps", security:"Security" };
+const HINTS = {
+  mock: "Mock mode needs nothing — runs fully offline with placeholder output, useful for testing the pipeline itself.",
+  groq: "Free tier via Groq. Get a key at <code>console.groq.com</code>, then run <code>export GROQ_API_KEY=...</code> before starting <code>webapp.py</code>.",
+  ollama: "Fully local and free. Install Ollama, run <code>ollama pull llama3.1</code>, then <code>ollama serve</code>.",
+};
+const HINTS_REPO = {
+  mock: "Mock mode writes placeholder text, not real code — use it only to check the pipeline mechanics. Pick Groq or Ollama for actual fixes.",
+  groq: "Free tier via Groq. Get a key at <code>console.groq.com</code>, <code>export GROQ_API_KEY=...</code> before starting <code>webapp.py</code>.",
+  gemini: "Free tier via Google Gemini. Get a key at <code>aistudio.google.com/apikey</code>, <code>export GEMINI_API_KEY=...</code> before starting <code>webapp.py</code>.",
+  custom: "Any OpenAI-compatible provider (Together.ai, Fireworks, OpenRouter, Cerebras, a self-hosted vLLM/LM Studio server, etc). Set the base URL, model, and export a matching API key before starting <code>webapp.py</code> (or pass it directly if your provider needs no key).",
+  ollama: "Fully local and free. <code>ollama pull llama3.1</code>, then <code>ollama serve</code>.",
+};
+
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.getElementById('panel-issue').style.display = name === 'issue' ? 'block' : 'none';
+  document.getElementById('panel-repo').style.display = name === 'repo' ? 'block' : 'none';
+  resetBoard();
+}
+
+document.getElementById('provider').addEventListener('change', e => {
+  document.getElementById('provider-hint').innerHTML = HINTS[e.target.value];
+  const show = e.target.value !== 'mock';
+  document.getElementById('model').style.display = show ? 'block' : 'none';
+  document.getElementById('model-label').style.display = show ? 'block' : 'none';
+});
+document.getElementById('provider-repo').addEventListener('change', e => {
+  document.getElementById('provider-hint-repo').innerHTML = HINTS_REPO[e.target.value];
+  const show = e.target.value !== 'mock';
+  document.getElementById('model-repo').style.display = show ? 'block' : 'none';
+  document.getElementById('model-repo-label').style.display = show ? 'block' : 'none';
+  const showBaseUrl = e.target.value === 'custom';
+  document.getElementById('base-url-repo').style.display = showBaseUrl ? 'block' : 'none';
+  document.getElementById('base-url-repo-label').style.display = showBaseUrl ? 'block' : 'none';
+});
+
+const dz = document.getElementById('dropzone');
+const fileInput = document.getElementById('repo_zip');
+['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('drag'); }));
+['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('drag'); }));
+dz.addEventListener('drop', e => { if(e.dataTransfer.files.length){ fileInput.files = e.dataTransfer.files; updateDzText(); }});
+fileInput.addEventListener('change', updateDzText);
+function updateDzText(){
+  const f = fileInput.files[0];
+  document.getElementById('dz-text').innerHTML = f ? `<strong>${f.name}</strong> selected` : '<strong>Click to choose</strong> or drop a .zip here';
+}
+
+let poller = null;
+
+function resetBoard(){
+  document.getElementById('board').innerHTML = '<div class="empty">Run an issue to see the pipeline light up.</div>';
+  document.getElementById('log').innerHTML = '<div style="color:#4a5266;">— waiting —</div>';
+  document.getElementById('verdict').classList.remove('show','pass','fail');
+  document.getElementById('diff-panel').style.display = 'none';
+  document.getElementById('round-banner').style.display = 'none';
+}
+
+async function startRun(){
+  const issue = document.getElementById('issue').value.trim();
+  if(!issue){ showErr('err', 'Describe an issue first.'); return; }
+  setRunning('run-btn', true); resetBoard();
+
+  let resp;
+  try{
+    resp = await fetch('/api/run', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ issue, provider: document.getElementById('provider').value,
+        mode: document.getElementById('mode').value, model: document.getElementById('model').value.trim() || null }) });
+  }catch(e){ fail('err','run-btn','Could not reach the server. Is webapp.py running?'); return; }
+  const data = await resp.json();
+  if(!resp.ok){ fail('err','run-btn', data.error || 'Failed to start run.'); return; }
+  badge('running');
+  if(poller) clearInterval(poller);
+  poller = setInterval(() => pollStatus(data.run_id, 'run-btn'), 700);
+}
+
+async function startRepoRun(){
+  const issue = document.getElementById('issue-repo').value.trim();
+  const testCmd = document.getElementById('test_cmd').value.trim();
+  const f = fileInput.files[0];
+  if(!f){ showErr('err-repo', 'Upload a .zip of your repo first.'); return; }
+  if(!issue || !testCmd){ showErr('err-repo', 'Issue and test command are both required.'); return; }
+  setRunning('run-btn-repo', true); resetBoard();
+
+  const form = new FormData();
+  form.append('repo_zip', f);
+  form.append('issue', issue);
+  form.append('test_cmd', testCmd);
+  form.append('provider', document.getElementById('provider-repo').value);
+  form.append('model', document.getElementById('model-repo').value.trim());
+  form.append('base_url', document.getElementById('base-url-repo').value.trim());
+  form.append('max_fix_rounds', document.getElementById('max_rounds').value);
+
+  let resp;
+  try{ resp = await fetch('/api/run_repo', { method:'POST', body: form }); }
+  catch(e){ fail('err-repo','run-btn-repo','Could not reach the server. Is webapp.py running?'); return; }
+  const data = await resp.json();
+  if(!resp.ok){ fail('err-repo','run-btn-repo', data.error || 'Failed to start run.'); return; }
+  badge('running');
+  if(poller) clearInterval(poller);
+  poller = setInterval(() => pollStatus(data.run_id, 'run-btn-repo', true), 700);
+}
+
+function setRunning(btnId, running){
+  const btn = document.getElementById(btnId);
+  btn.disabled = running;
+  btn.textContent = running ? 'Running…' : (btnId === 'run-btn' ? 'Run the company' : 'Run against this repo');
+}
+function badge(text){ document.getElementById('run-badge').textContent = text; }
+function showErr(id, msg){ const e = document.getElementById(id); e.textContent = msg; e.style.display='block'; }
+function fail(errId, btnId, msg){ showErr(errId, msg); setRunning(btnId, false); badge('idle'); }
+
+async function pollStatus(runId, btnId, isRepo){
+  const resp = await fetch('/api/status/' + runId);
+  const data = await resp.json();
+  if(data.error){ clearInterval(poller); fail(isRepo?'err-repo':'err', btnId, data.error); return; }
+
+  renderBoard(data.tasks || []);
+  renderLog(data.log || []);
+
+  if(isRepo){
+    if(data.round){
+      document.getElementById('round-banner').style.display = 'flex';
+      document.getElementById('round-pill').textContent = 'round ' + data.round;
+      document.getElementById('round-sub').textContent = data.status === 'finished'
+        ? (data.resolved ? 'tests passed' : 'tests still failing after ' + data.rounds + ' round(s)')
+        : 'agents working…';
+    }
+    if(data.status === 'finished'){
+      showVerdict(data.resolved, data.rounds, data.test_output, runId);
+      renderDiff(data.files_before, data.files_after);
+    }
+  }
+
+  if(data.status === 'finished'){
+    clearInterval(poller); badge('finished'); setRunning(btnId, false);
+  } else if(data.status === 'error'){
+    clearInterval(poller); badge('error'); fail(isRepo?'err-repo':'err', btnId, data.error || 'Run failed.');
+  }
+}
+
+function showVerdict(resolved, rounds, testOutput, runId){
+  const v = document.getElementById('verdict');
+  v.classList.add('show', resolved ? 'pass' : 'fail');
+  document.getElementById('verdict-headline').textContent = resolved
+    ? `Tests passed after ${rounds} round${rounds>1?'s':''}` : `Still failing after ${rounds} round(s)`;
+  document.getElementById('verdict-sub').textContent = (testOutput || '').split('\n').slice(-4).join(' · ');
+  const dl = document.getElementById('dl-link');
+  dl.href = '/api/download/' + runId; dl.style.display = 'inline';
+}
+
+function renderDiff(before, after){
+  before = before || {}; after = after || {};
+  const changed = Object.keys(after).filter(f => before[f] !== after[f]);
+  const panel = document.getElementById('diff-panel');
+  if(!changed.length){ panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  const tabs = document.getElementById('filetabs');
+  tabs.innerHTML = changed.map((f,i) => `<div class="filetab ${i===0?'active':''}" data-f="${escapeAttr(f)}" onclick="selectFile(this)">${escapeHtml(f)}</div>`).join('');
+  window.__diffData = {before, after};
+  selectFile(tabs.firstElementChild);
+}
+function selectFile(el){
+  document.querySelectorAll('.filetab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const f = el.dataset.f;
+  const {before, after} = window.__diffData;
+  document.getElementById('diffbox').innerHTML = simpleDiff(before[f] || '', after[f] || '');
+}
+function simpleDiff(a, b){
+  const A = a.split('\n'), B = b.split('\n');
+  const setA = new Set(A);
+  let html = '';
+  for(const line of B){
+    if(setA.has(line)){ html += `<span class="ctx">  ${escapeHtml(line)}</span>`; }
+    else { html += `<span class="add">+ ${escapeHtml(line)}</span>`; }
+  }
+  const setB = new Set(B);
+  for(const line of A){ if(!setB.has(line)) html += `<span class="del">- ${escapeHtml(line)}</span>`; }
+  return html || '<span class="ctx">(no textual change)</span>';
+}
+
+function renderBoard(tasks){
+  const board = document.getElementById('board');
+  if(!tasks.length) return;
+  const depth = {}; const byId = Object.fromEntries(tasks.map(t => [t.id, t]));
+  function depthOf(id){
+    if(depth[id] !== undefined) return depth[id];
+    const t = byId[id];
+    if(!t.depends_on.length){ depth[id]=0; return 0; }
+    const d = 1 + Math.max(...t.depends_on.map(depthOf)); depth[id]=d; return d;
+  }
+  tasks.forEach(t => depthOf(t.id));
+  const maxDepth = Math.max(...tasks.map(t => depth[t.id]));
+  let html = '';
+  for(let d=0; d<=maxDepth; d++){
+    const stage = tasks.filter(t => depth[t.id]===d);
+    if(!stage.length) continue;
+    html += `<div class="stage-label">Stage ${d+1}</div><div class="cards">`;
+    for(const t of stage){
+      const hasResult = t.result && t.result.length > 0;
+      html += `<div class="card ${hasResult?'expandable':''}" style="--role-color:var(--c-${t.role})" ${hasResult?`onclick="this.classList.toggle('open')"`:''}>
+        <div class="role">${ROLE_LABEL[t.role]||t.role}</div>
+        <div class="title">${escapeHtml(t.title)}</div>
+        <span class="status ${t.status}"><span class="dot"></span>${t.status}${t.attempts>1?' ·retry':''}</span>
+        ${hasResult?`<div class="result">${escapeHtml(t.result)}</div>`:''}
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  board.innerHTML = html;
+}
+
+function renderLog(lines){
+  const log = document.getElementById('log');
+  log.innerHTML = lines.map(l => {
+    const parts = l.match(/^(\[[\d:]+\]\s*)(\S+)(.*)$/);
+    return parts ? `<div>${escapeHtml(parts[1])}<span class="tag">${escapeHtml(parts[2])}</span>${escapeHtml(parts[3])}</div>` : `<div>${escapeHtml(l)}</div>`;
+  }).join('');
+  log.scrollTop = log.scrollHeight;
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s){ return escapeHtml(s).replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>

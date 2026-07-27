@@ -1,0 +1,6 @@
+flask
+requests
+PyJWT
+cryptography
+e2b-code-interpreter
+gunicorn
